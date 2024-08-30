@@ -1,7 +1,6 @@
 "use client"
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { TextField, Box, Grid2, FormControlLabel, FormGroup, Switch, Slider, Button, Typography } from "@mui/material";
-import mqtt from 'mqtt';
 
 function NumberTextField({ ...props }) {
   return (
@@ -11,7 +10,7 @@ function NumberTextField({ ...props }) {
   );
 }
 
-export default function ParameterBoard() {
+export default function ParameterBoard({ client }) {
   const [isSending, setSending] = useState(false);
   const [P, setP] = useState(0);
   const [I, setI] = useState(0);
@@ -21,7 +20,6 @@ export default function ParameterBoard() {
   const [currentCheckpoint, setCurrentCheckpoint] = useState(0);
   const [canGo, setCanGo] = useState(false);
   const [direction, setDirection] = useState(true);
-  const client = useRef(null);
 
   const handleSend = () => {
     if (client.current) {
@@ -39,38 +37,30 @@ export default function ParameterBoard() {
   }
 
   useEffect(() => {
-    client.current = mqtt.connect(process.env["NEXT_PUBLIC_MQTT_URL"],
-      {
-        username: process.env["NEXT_PUBLIC_MQTT_USERNAME"],
-        password: process.env["NEXT_PUBLIC_MQTT_PASS"],
+    if (client.current) {
+      const handler = {
+        "input/parameter/PID/P": (message) => { setP(parseInt(message)); },
+        "input/parameter/PID/I": (message) => { setI(parseInt(message)); },
+        "input/parameter/PID/D": (message) => { setD(parseInt(message)); },
+        "input/parameter/speed": (message) => { setSpeed(parseInt(message)); },
+        "input/parameter/canGo": (message) => { setCanGo(parseInt(message) > 0); },
+        "input/parameter/direction": (message) => { setDirection(parseInt(message) > 0); },
+      }
+
+      client.current.on("connect", () => {
+        client.current.subscribe(Object.keys(handler), (err) => { if (err) { console.error(`Error: ${err}`); } });
       });
 
-    const handler = {
-      "input/parameter/PID/P": (message) => { setP(parseInt(message)); },
-      "input/parameter/PID/I": (message) => { setI(parseInt(message)); },
-      "input/parameter/PID/D": (message) => { setD(parseInt(message)); },
-      "input/parameter/speed": (message) => { setSpeed(parseInt(message)); },
-      "input/parameter/canGo": (message) => { setCanGo(parseInt(message) > 0); },
-      "input/parameter/direction": (message) => { setDirection(parseInt(message) > 0); },
+      client.current.on("message", (topic, message) => {
+        console.log(topic, parseInt(message));
+        if (handler[topic]) {
+          handler[topic](message);
+        } else {
+          console.warn(`No handler for ${topic}`);
+        }
+      });
     }
-
-    client.current.on("connect", () => {
-      client.current.subscribe(Object.keys(handler), (err) => { if (err) { console.error(`Error: ${err}`); } });
-    });
-
-    client.current.on("message", (topic, message) => {
-      console.log(topic, parseInt(message));
-      if (handler[topic]) {
-        handler[topic](message);
-      } else {
-        console.warn(`No handler for ${topic}`);
-      }
-    });
-
-    return () => {
-      if (client.current) client.current.end();
-    };
-  }, []);
+  }, [client]);
 
 
   return (
