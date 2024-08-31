@@ -59,30 +59,11 @@ export default function GraphDisplay({ client }) {
   const [input, setInput] = useState([]);
   const [output, setOutput] = useState([]);
 
-  useEffect(() => {
-    if (client.current) {
-      const handler = {
-        "output/parameter/PID/input": (message) => { setInput(prev => [...prev, { timeStamp: Date().now(), value: parseFloat(message) }]) },
-        "output/parameter/PID/output": (message) => { setOutput(prev => [...prev, { timeStamp: Date().now(), value: parseFloat(message) }]) },
-      }
-
-      client.current.on("connect", () => {
-        client.current.subscribe(Object.keys(handler), (err) => { if (err) { console.error(`Error: ${err}`); } });
-      });
-
-      client.current.on("message", (topic, message) => {
-        if (handler[topic]) {
-          handler[topic](message);
-        } else {
-          console.warn(`No handler for ${topic}`);
-        }
-      });
-    }
-  }, [client]);
+  useEffect(() => console.log(input), [input]);
 
   return (
     <>
-      
+      <LineChart data={input} width="10rem" height="10rem" />
     </>
   );
 }
