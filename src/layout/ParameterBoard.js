@@ -23,8 +23,10 @@ function NumberTextField({ ...props }) {
 
 export default function ParameterBoard() {
   const client = useContext(mqttClientContext);
+  //Should be a component but Im in a rush
   const [isSending, setSending] = useState(false);
   const [isFetching, setFetching] = useState(false);
+  //
   const [data, setData] = useState(defaultData);
 
   const handleSend = async () => {
@@ -36,7 +38,6 @@ export default function ParameterBoard() {
     }
     setSending(false);
   }
-
   const handleFetch = async () => {
     setFetching(true);
     if (client.current) {
@@ -56,7 +57,6 @@ export default function ParameterBoard() {
 
     client.current.on("connect", () => {
       client.current.on("message", (topic, message) => {
-        console.log(message);
         if (handler[topic])
           handler[topic](message);
       });
@@ -64,23 +64,23 @@ export default function ParameterBoard() {
   }, [client]);
 
   return (
-    <Box className="flex flex-col" component="form" onSubmit={(e) => { e.preventDefault(); handleSend(); }}>
+    <Box component="form" onSubmit={(e) => { e.preventDefault(); handleSend(); }}>
       <FormGroup>
-        <Grid2 container spacing={2}>
-          <Grid2 className="mt-4" size={4} ><NumberTextField label="P" name="P" value={data.P} onChange={(e) => setData(prev => ({ ...prev, P: e.target.value }))} /></Grid2>
-          <Grid2 className="mt-4" size={4} ><NumberTextField label="I" name="I" value={data.I} onChange={(e) => setData(prev => ({ ...prev, I: e.target.value }))} /></Grid2>
-          <Grid2 className="mt-4" size={4} ><NumberTextField label="D" name="D" value={data.D} onChange={(e) => setData(prev => ({ ...prev, D: e.target.value }))} /></Grid2>
-          <Grid2 className="mt-4" size={12}><NumberTextField label="setpoint" name="setpoint" value={data.setpoint} onChange={(e) => setData(prev => ({ ...prev, setpoint: e.target.value }))} /></Grid2>
-          <Grid2 className="mt-4 flex flex-col justify-center" size={12}>
+        <Grid2 container rowSpacing={4} columnSpacing={2}>
+          <Grid2 size={4} ><NumberTextField label="P" name="P" value={data.P} onChange={(e) => setData(prev => ({ ...prev, P: e.target.value }))} /></Grid2>
+          <Grid2 size={4} ><NumberTextField label="I" name="I" value={data.I} onChange={(e) => setData(prev => ({ ...prev, I: e.target.value }))} /></Grid2>
+          <Grid2 size={4} ><NumberTextField label="D" name="D" value={data.D} onChange={(e) => setData(prev => ({ ...prev, D: e.target.value }))} /></Grid2>
+          <Grid2 size={12}><NumberTextField label="setpoint" name="setpoint" value={data.setpoint} onChange={(e) => setData(prev => ({ ...prev, setpoint: e.target.value }))} /></Grid2>
+          <Grid2 className="flex flex-col justify-center" size={12}>
             <Typography gutterBottom>Current checkpoint</Typography>
             <Slider defaultValue={0} min={0} max={2} step={1} marks={[{ value: 1, label: "west" }, { value: 2, label: "south" }]} value={data.currentCheckpoint} onChange={(e) => setData(prev => ({ ...prev, currentCheckpoint: e.target.value }))} />
           </Grid2>
-          <Grid2 className="mt-4 flex flex-col justify-center" size={8}><Slider defaultValue={150} min={0} max={255} step={5} value={data.speed} onChange={(e) => setData(prev => ({ ...prev, speed: e.target.value }))} /></Grid2>
-          <Grid2 className="mt-4" size={4}><NumberTextField label="speed" name="speed" value={data.speed} onChange={(e) => setData(prev => ({ ...prev, speed: e.target.value }))} /></Grid2>
-          <Grid2 className="mt-4" size={6}><FormControlLabel control={<Switch onChange={(e) => setData(prev => ({ ...prev, canGo: (e.target.checked ? 1 : 0) }))} checked={data.canGo} />} label={data.canGo ? "Go" : "Stop"} name="can go" /></Grid2>
-          <Grid2 className="mt-4" size={6}><FormControlLabel control={<Switch onChange={(e) => setData(prev => ({ ...prev, direction: (e.target.checked ? 1 : 0) }))} checked={data.direction} />} label={data.direction ? "Forward" : "Backward"} name="direction" /></Grid2>
-          <Grid2 className="mt-4" size={12}><Button variant="contained" fullWidth disabled={isSending} onClick={() => handleSend()}>Send</Button></Grid2>
-          <Grid2 className="mt-4" size={12}><Button variant="contained" fullWidth disabled={isFetching} onClick={() => handleFetch()}>Get from car</Button></Grid2>
+          <Grid2 className="flex flex-col justify-center" size={8}><Slider defaultValue={150} min={0} max={255} step={5} value={data.speed} onChange={(e) => setData(prev => ({ ...prev, speed: e.target.value }))} /></Grid2>
+          <Grid2 size={4}><NumberTextField label="speed" name="speed" value={data.speed} onChange={(e) => setData(prev => ({ ...prev, speed: e.target.value }))} /></Grid2>
+          <Grid2 size={6}><FormControlLabel control={<Switch onChange={(e) => setData(prev => ({ ...prev, canGo: (e.target.checked ? 1 : 0) }))} checked={data.canGo} />} label={data.canGo ? "Go" : "Stop"} name="can go" /></Grid2>
+          <Grid2 size={6}><FormControlLabel control={<Switch onChange={(e) => setData(prev => ({ ...prev, direction: (e.target.checked ? 1 : 0) }))} checked={data.direction} />} label={data.direction ? "Forward" : "Backward"} name="direction" /></Grid2>
+          <Grid2 size={12}><Button variant="contained" fullWidth disabled={isSending} onClick={() => handleSend()}>Send</Button></Grid2>
+          <Grid2 size={12}><Button variant="contained" fullWidth disabled={isFetching} onClick={() => handleFetch()}>Get from car</Button></Grid2>
         </Grid2>
       </FormGroup>
     </Box>

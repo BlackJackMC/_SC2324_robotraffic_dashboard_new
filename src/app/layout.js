@@ -1,6 +1,6 @@
 import "./globals.css";
-import { ThemeProvider } from "@mui/material/styles";
-import { customTheme } from "@/design/theme";
+import { lightTheme, darkTheme } from "@/design/theme"
+import CustomThemeProvider from "@/components/CustomThemeProvider";
 
 export const metadata = {
   title: "Robotraffic dashboard",
@@ -10,9 +10,9 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <ThemeProvider theme={customTheme}>
+      <CustomThemeProvider lightTheme={lightTheme} darkTheme={darkTheme}>
         <body>{children}</body>
-      </ThemeProvider>
+      </CustomThemeProvider>
     </html>
   );
 }

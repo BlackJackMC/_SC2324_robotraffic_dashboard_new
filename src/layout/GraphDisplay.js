@@ -1,7 +1,11 @@
 "use client"
-import { useEffect, useRef } from "react";
-import *  as d3 from "d3";
-import customTheme from "@/design/theme";
+import { useState, useEffect, useRef, useContext } from "react";
+import { useTheme } from "@mui/material/styles";
+import { Chart, registerables } from 'chart.js';
+
+Chart.register(...registerables);
+
+import mqttClientContext from "@/context/mqttClientContext";
 
 // Data format
 /*
@@ -11,59 +15,77 @@ import customTheme from "@/design/theme";
 }
 */
 
-function LineChart({ data, width, height }) {
-  const ref = useRef();
+function LineChart({ data, label }) {
+  const theme = useTheme();
+  const canvasRef = useRef();
+  const chartRef = useRef();
 
   useEffect(() => {
-    const svg = d3.select(ref)
-      .attr("width", width)
-      .attr("height", height)
+    if (!canvasRef.current) return;
+    console.log(theme.palette.mode);
+    Chart.defaults.color = theme.palette.text.primary;
+    Chart.defaults.backgroundColor = theme.palette.text.primary;
+    Chart.defaults.borderColor = theme.palette.grey[800];
+    chartRef.current = new Chart(canvasRef.current, {
+      type: "line",
+      data: {
+        labels: [],
+        datasets: [
+          {
+            label: label,
+            data: [],
+          }
+        ],
+      },
+      options: {
+        responsive: true,
+      }
+    });
 
-    const xScale = d3.scaleTime()
-      .domain([d3.min(data, d => d.timeStamp), d3.max(data, d => d.timeStamp)])
-      .range([0, width]);
+    return () => {
+      if (chartRef.current)
+        chartRef.current.destroy();
+    }
+  }, [theme]);
 
-    const yScale = d3.scaleLinear()
-      .domain([d3.min(data, d => d.value) - 1000, d3.max(data, d => d.value) + 1000])
-      .range([height, 0]);
-
-    const line = d3.line()
-      .x(d => xScale(d.timeStamp))
-      .y(d => yScale(d.value))
-
-    svg.selectAll("*").remove();
-
-    svg.append("g")
-      .call(d3.axisBottom(xScale).ticks(5))
-      .attr("transform", `translate(0, ${height})`);
-
-    svg.append("g")
-      .call(d3.axisLeft(yScale).tick(5))
-
-    svg.append("path")
-      .datum(data)
-      .attr("d", line)
-      .attr("fill", "none")
-      .attr("stroke-width", 2)
-      .attr("stroke", customTheme.palette.primary.main);
-
-
-  }, [data, width, height]);
+  useEffect(() => {
+    if (chartRef.current) {
+      chartRef.current.data.labels = data.map(curr => curr.timeStamp);
+      chartRef.current.data.datasets[0].data = data.map(curr => curr.value);
+      chartRef.current.update();
+    }
+  }, [data])
 
   return (
-    <svg ref={ref}></svg>
+    <canvas ref={canvasRef}></canvas>
   );
 }
 
-export default function GraphDisplay({ client }) {
+export default function GraphDisplay() {
+  const client = useContext(mqttClientContext);
   const [input, setInput] = useState([]);
   const [output, setOutput] = useState([]);
 
-  useEffect(() => console.log(input), [input]);
+  useEffect(() => {
+    if (!client.current) return;
+
+    const handler = {
+      "output/parameter/PID/input": (message) => setInput(prev => [...prev, { timeStamp: new Date().toLocaleTimeString(), value: Number(message) }]),
+      "output/parameter/PID/output": (message) => setOutput(prev => [...prev, { timeStamp: new Date().toLocaleTimeString(), value: Number(message) }]),
+    };
+
+    client.current.on("connect", () => {
+      client.current.on("message", (topic, message) => {
+        if (handler[topic])
+          handler[topic](message);
+      })
+    })
+  }, [client]);
 
   return (
     <>
-      <LineChart data={input} width="10rem" height="10rem" />
+      <LineChart data={input} label="input" />
+      <LineChart data={output} label="output" />
     </>
   );
 }
