@@ -22,7 +22,6 @@ function LineChart({ data, label }) {
 
   useEffect(() => {
     if (!canvasRef.current) return;
-    console.log(theme.palette.mode);
     Chart.defaults.color = theme.palette.text.primary;
     Chart.defaults.backgroundColor = theme.palette.text.primary;
     Chart.defaults.borderColor = theme.palette.grey[800];
@@ -46,7 +45,7 @@ function LineChart({ data, label }) {
       if (chartRef.current)
         chartRef.current.destroy();
     }
-  }, [theme]);
+  }, [theme, label]);
 
   useEffect(() => {
     if (chartRef.current) {
