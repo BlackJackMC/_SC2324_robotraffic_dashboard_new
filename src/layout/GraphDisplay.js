@@ -6,6 +6,7 @@ import { Chart, registerables } from 'chart.js';
 Chart.register(...registerables);
 
 import mqttClientContext from "@/context/mqttClientContext";
+import { Paper } from "@mui/material";
 
 // Data format
 /*
@@ -22,9 +23,11 @@ function LineChart({ data, label }) {
 
   useEffect(() => {
     if (!canvasRef.current) return;
+
     Chart.defaults.color = theme.palette.text.primary;
     Chart.defaults.backgroundColor = theme.palette.text.primary;
     Chart.defaults.borderColor = theme.palette.grey[800];
+    
     chartRef.current = new Chart(canvasRef.current, {
       type: "line",
       data: {
@@ -38,6 +41,8 @@ function LineChart({ data, label }) {
       },
       options: {
         responsive: true,
+        aspectRatio: 3,
+        maintainAspectRatio: true,
       }
     });
 
@@ -53,10 +58,20 @@ function LineChart({ data, label }) {
       chartRef.current.data.datasets[0].data = data.map(curr => curr.value);
       chartRef.current.update();
     }
-  }, [data])
+  }, [data]);
+
+  // useEffect(() => {
+  //   if (!canvasRef.current) return;
+  //   const computedStyle = window.getComputedStyle(canvasRef.current);
+  //   const parentHeight = canvasRef.current.parentElement.clientHeight 
+  //                      - parseFloat(computedStyle.paddingTop) 
+  //                      - parseFloat(computedStyle.paddingBottom);
+
+  //   canvasRef.current.setAttribute("height", parentHeight / 2);
+  // }, []);
 
   return (
-    <canvas ref={canvasRef}></canvas>
+    <Paper className="px-10 py-6 mb-4"><canvas className="mb-4" ref={canvasRef}></canvas></Paper>
   );
 }
 

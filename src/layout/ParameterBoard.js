@@ -1,6 +1,6 @@
 "use client"
 import { useState, useEffect, useContext } from 'react';
-import { TextField, Box, Grid2, FormControlLabel, FormGroup, Switch, Slider, Button, Typography } from "@mui/material";
+import { TextField, Box, Grid2, FormControlLabel, FormGroup, Switch, Slider, Button, Typography, Paper } from "@mui/material";
 
 import mqttClientContext from "@/context/mqttClientContext";
 
@@ -64,7 +64,7 @@ export default function ParameterBoard() {
   }, [client]);
 
   return (
-    <Box component="form" onSubmit={(e) => { e.preventDefault(); handleSend(); }}>
+    <Paper className="py-10 px-6">
       <FormGroup>
         <Grid2 container rowSpacing={4} columnSpacing={2}>
           <Grid2 size={4} ><NumberTextField label="P" name="P" value={data.P} onChange={(e) => setData(prev => ({ ...prev, P: e.target.value }))} /></Grid2>
@@ -83,6 +83,6 @@ export default function ParameterBoard() {
           <Grid2 size={12}><Button variant="contained" fullWidth disabled={isFetching} onClick={() => handleFetch()}>Get from car</Button></Grid2>
         </Grid2>
       </FormGroup>
-    </Box>
+    </Paper>
   );
 }

@@ -1,5 +1,5 @@
 "use client"
-import { Container, Grid2 } from "@mui/material";
+import { Container, Grid2, Paper } from "@mui/material";
 import { useEffect, useRef } from "react";
 import mqtt from 'mqtt';
 
@@ -35,10 +35,10 @@ export default function Dashboard() {
 
   return (
     <mqttClientContext.Provider value={client}>
-      <Container maxWidth="lg" className="mt-3">
-        <Grid2 container spacing={5}>
-          <Grid2 size={{ lg: 4, xs: 12 }}><ParameterBoard /></Grid2>
-          <Grid2 size={{ lg: 8, xs: 12}}><GraphDisplay /></Grid2>
+      <Container maxWidth="xl" className="mt-3">
+        <Grid2 container spacing={2}>
+          <Grid2 size={{ lg: 3, xs: 12 }}><ParameterBoard /></Grid2>
+          <Grid2 size={{ lg: 9, xs: 12}}><GraphDisplay /></Grid2>
         </Grid2>
       </Container >
     </mqttClientContext.Provider>
