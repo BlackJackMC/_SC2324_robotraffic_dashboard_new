@@ -15,16 +15,6 @@ import mqttClientContext from "@/context/mqttClientContext";
 function CustomChart({ data, ...props }) {
   return (
     <LineChart height={300} xAxis={[{ data: data.map(curr => curr.timeStamp), scaleType: "time" }]} series={[{ data: data.map(curr => curr.value), label: props.label }]}/>
-    // <LineChart
-    //   xAxis={[{ data: [1, 2, 3, 5, 8, 10] }]}
-    //   series={[
-    //     {
-    //       data: [2, 5.5, 2, 8.5, 1.5, 5],
-    //     },
-    //   ]}
-    //   width={500}
-    //   height={300}
-    // />
   );
 }
 

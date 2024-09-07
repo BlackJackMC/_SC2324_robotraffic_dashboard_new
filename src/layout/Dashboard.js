@@ -1,5 +1,5 @@
 "use client"
-import { Container, Grid2, Paper } from "@mui/material";
+import { Container, Grid2 } from "@mui/material";
 import { useEffect, useRef } from "react";
 import mqtt from 'mqtt';
 
