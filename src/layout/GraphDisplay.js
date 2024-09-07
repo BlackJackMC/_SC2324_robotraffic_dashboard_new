@@ -1,12 +1,9 @@
 "use client"
-import { useState, useEffect, useRef, useContext } from "react";
-import { useTheme } from "@mui/material/styles";
-import { Chart, registerables } from 'chart.js';
-
-Chart.register(...registerables);
-
+import { useState, useEffect, useContext } from "react";
+import { Button } from "@mui/material";
+import { LineChart } from "@mui/x-charts";
 import mqttClientContext from "@/context/mqttClientContext";
-import { Paper } from "@mui/material";
+
 
 // Data format
 /*
@@ -15,65 +12,22 @@ import { Paper } from "@mui/material";
     value: number
 }
 */
-
-function LineChart({ data, label }) {
-  const theme = useTheme();
-  const canvasRef = useRef();
-  const chartRef = useRef();
-
-  useEffect(() => {
-    if (!canvasRef.current) return;
-
-    Chart.defaults.color = theme.palette.text.primary;
-    Chart.defaults.backgroundColor = theme.palette.text.primary;
-    Chart.defaults.borderColor = theme.palette.grey[800];
-    
-    chartRef.current = new Chart(canvasRef.current, {
-      type: "line",
-      data: {
-        labels: [],
-        datasets: [
-          {
-            label: label,
-            data: [],
-          }
-        ],
-      },
-      options: {
-        responsive: true,
-        aspectRatio: 3,
-        maintainAspectRatio: true,
-      }
-    });
-
-    return () => {
-      if (chartRef.current)
-        chartRef.current.destroy();
-    }
-  }, [theme, label]);
-
-  useEffect(() => {
-    if (chartRef.current) {
-      chartRef.current.data.labels = data.map(curr => curr.timeStamp);
-      chartRef.current.data.datasets[0].data = data.map(curr => curr.value);
-      chartRef.current.update();
-    }
-  }, [data]);
-
-  // useEffect(() => {
-  //   if (!canvasRef.current) return;
-  //   const computedStyle = window.getComputedStyle(canvasRef.current);
-  //   const parentHeight = canvasRef.current.parentElement.clientHeight 
-  //                      - parseFloat(computedStyle.paddingTop) 
-  //                      - parseFloat(computedStyle.paddingBottom);
-
-  //   canvasRef.current.setAttribute("height", parentHeight / 2);
-  // }, []);
-
+function CustomChart({ data, ...props }) {
   return (
-    <Paper className="px-10 py-6 mb-4"><canvas className="mb-4" ref={canvasRef}></canvas></Paper>
+    <LineChart height={300} xAxis={[{ data: data.map(curr => curr.timeStamp), scaleType: "time" }]} series={[{ data: data.map(curr => curr.value), label: props.label }]}/>
+    // <LineChart
+    //   xAxis={[{ data: [1, 2, 3, 5, 8, 10] }]}
+    //   series={[
+    //     {
+    //       data: [2, 5.5, 2, 8.5, 1.5, 5],
+    //     },
+    //   ]}
+    //   width={500}
+    //   height={300}
+    // />
   );
 }
+
 
 export default function GraphDisplay() {
   const client = useContext(mqttClientContext);
@@ -84,8 +38,8 @@ export default function GraphDisplay() {
     if (!client.current) return;
 
     const handler = {
-      "output/parameter/PID/input": (message) => setInput(prev => [...prev, { timeStamp: new Date().toLocaleTimeString(), value: Number(message) }]),
-      "output/parameter/PID/output": (message) => setOutput(prev => [...prev, { timeStamp: new Date().toLocaleTimeString(), value: Number(message) }]),
+      "output/parameter/PID/input": (message) => setInput(prev => [...prev, { timeStamp: new Date(), value: Number(message) }]),
+      "output/parameter/PID/output": (message) => setOutput(prev => [...prev, { timeStamp: new Date(), value: Number(message) }]),
     };
 
     client.current.on("connect", () => {
@@ -98,8 +52,9 @@ export default function GraphDisplay() {
 
   return (
     <>
-      <LineChart data={input} label="input" />
-      <LineChart data={output} label="output" />
+      <CustomChart data={input} label="input" />
+      <CustomChart data={output} label="output" />
+      <Button variant="contained" fullwidth onClick={() => { setInput([]); setOutput([]); }}>Clear graph</Button>
     </>
   );
 }

@@ -4,7 +4,7 @@
 
 :root {
   --baseFontSize: 14px;
-  --responsiveFontSize: 0.5dvw;
+  --responsiveFontSize: 0.25dvw;
 }
 
 @media (prefers-color-scheme: dark) {

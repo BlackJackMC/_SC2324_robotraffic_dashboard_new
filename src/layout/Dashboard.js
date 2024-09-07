@@ -38,7 +38,7 @@ export default function Dashboard() {
       <Container maxWidth="xl" className="mt-3">
         <Grid2 container spacing={2}>
           <Grid2 size={{ lg: 3, xs: 12 }}><ParameterBoard /></Grid2>
-          <Grid2 size={{ lg: 9, xs: 12}}><GraphDisplay /></Grid2>
+          <Grid2 size={{ lg: 9, xs: 12}} className="h-svh max-h-svh"><GraphDisplay /></Grid2>
         </Grid2>
       </Container >
     </mqttClientContext.Provider>
