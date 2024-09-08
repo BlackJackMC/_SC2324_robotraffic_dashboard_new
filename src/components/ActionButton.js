@@ -2,10 +2,9 @@
 import { useState } from "react";
 import { Button } from "@mui/material";
 
-export default function ActionButton({ children, ...props }) {
-  const [isActive, setActive] = useState(false);
-
+export default function ActionButton({ children, onClickHandler, disabled, ...props }) {
+  const [isDisabled, setDisabled] = useState(false);
   return (
-    <Button fullWidth={true} variant="contained" disabled={props.disabled ? disabled : isActive} onClick={() => { setActive(true); props.onClickHandler(); setActive(false); }} {...props}>{children}</Button>
+    <Button fullWidth={true} variant="contained" disabled={isDisabled || disabled} onClick={async () => { if (!disabled) { setDisabled(true); await onClickHandler(); setDisabled(false); } }} {...props}>{children}</Button>
   );
 }

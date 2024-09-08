@@ -44,7 +44,7 @@ export default function GraphDisplay() {
     <>
       <CustomChart data={input} label="input" />
       <CustomChart data={output} label="output" />
-      <Button variant="contained" fullwidth onClick={() => { setInput([]); setOutput([]); }}>Clear graph</Button>
+      <Button variant="contained" onClick={() => { setInput([]); setOutput([]); }}>Clear graph</Button>
     </>
   );
 }

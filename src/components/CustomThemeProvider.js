@@ -19,7 +19,7 @@ export default function CustomThemeProvider({ lightTheme, darkTheme, children })
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
-  const theme = useMemo(() => (mode === 'dark' ? darkTheme : lightTheme), [mode]);
+  const theme = useMemo(() => (mode === 'dark' ? darkTheme : lightTheme), [mode, darkTheme, lightTheme]);
 
   return (
     <ThemeProvider theme={theme}>
