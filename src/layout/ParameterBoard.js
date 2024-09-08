@@ -26,7 +26,6 @@ export default function ParameterBoard() {
   const handleSend = async () => {
     if (client.current) {
       const output = JSON.stringify(data);
-      console.log(output);
       await client.current.publishAsync("input/parameter", output, { retain: true });
     }
   }

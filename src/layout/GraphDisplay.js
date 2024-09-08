@@ -41,10 +41,10 @@ export default function GraphDisplay() {
   }, [client]);
 
   return (
-    <>
+    <div className="flex flex-col items-end">
       <CustomChart data={input} label="input" />
       <CustomChart data={output} label="output" />
       <Button variant="contained" onClick={() => { setInput([]); setOutput([]); }}>Clear graph</Button>
-    </>
+    </div>
   );
 }

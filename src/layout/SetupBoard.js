@@ -1,6 +1,6 @@
 "use client"
-import { FormControl, FormLabel, FormControlLabel, FormGroup, Paper, Switch } from "@mui/material"
-import { useContext, useEffect, useState } from "react";
+import { FormControl, FormLabel, FormGroup, Paper, Typography } from "@mui/material"
+import { useContext, useEffect, useState, useRef } from "react";
 
 import mqttClientContext from "@/context/mqttClientContext"
 import ActionButton from "@/components/ActionButton";
@@ -11,10 +11,18 @@ const defaultState = {
   line: false,
   steering: false,
   parameter: false,
+  mqtt: false,
+  car: false,
 }
 
 function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function StatusDisplay({ label, state, onState, offState }) {
+  return (
+    <Typography>{label}: <Typography component="span" color={state ? "success" : "error"}>{state ? onState : offState}</Typography></Typography>
+  );
 }
 
 function ModuleControl({ name, label, state, setState, disabled, ...props }) {
@@ -28,13 +36,14 @@ function ModuleControl({ name, label, state, setState, disabled, ...props }) {
 
   return (
     <FormGroup className="flex flex-row justify-between mb-4">
-      <FormControlLabel name={name} label={label} control={<Switch checked={state[name]} onChange={(e) => setState(prev => ({ ...prev, [name]: e.target.checked }))} />} {...props} />
+      <StatusDisplay label={label} state={state[name]} onState="Online" offState="Offline" />
       <ActionButton disabled={disabled} fullWidth={false} onClickHandler={() => restartService(name)} {...props}>Restart</ActionButton>
     </FormGroup>
   );
 }
 
 export default function SetupBoard() {
+  const buttonContainerRef = useRef();
   const client = useContext(mqttClientContext);
   const [state, setState] = useState(defaultState);
 
@@ -49,6 +58,7 @@ export default function SetupBoard() {
     };
 
     client.current.on("connect", () => {
+      setState(prev => ({ ...prev, mqtt: true }));
       client.current.on("message", (topic, message) => {
         if (handler[topic]) handler[topic](message);
       });
@@ -61,14 +71,21 @@ export default function SetupBoard() {
         <Paper className="py-10 px-6 mb-4">
           <FormControl component="fieldset" className="block">
             <FormLabel component="legend">State</FormLabel>
-            <FormGroup>
+            <FormGroup ref={buttonContainerRef}>
               <ModuleControl name="hall" label="Hall sensor" state={state} setState={setState} />
               <ModuleControl name="motor" label="Motor" state={state} setState={setState} />
               <ModuleControl name="line" label="QTR sensor" state={state} setState={setState} />
               <ModuleControl name="steering" label="Servo" state={state} setState={setState} />
               <ModuleControl name="parameter" label="Parameter" disabled state={state} setState={setState} />
             </FormGroup>
+            <ActionButton onClickHandler={() => {
+              if (buttonContainerRef.current) buttonContainerRef.current.querySelectorAll("button").forEach((button) => button.click());
+            }}>Restart all</ActionButton>
           </FormControl>
+        </Paper>
+        <Paper className="py-10 px-6 mb-4">
+          <StatusDisplay label="MQTT" state={state["mqtt"]} onState="Connected" offState="Disconnected"/>
+          <StatusDisplay label="Car" state={state["car"]} onState="Connected" offState="Disconnected"/>
         </Paper>
       </FormControl>
     </>
