@@ -40,6 +40,7 @@ export default function ParameterBoard() {
     const handler = {
       "input/parameter": async (message) => {
         const input = await JSON.parse(message);
+        for (let key in input) key in defaultData || delete input[key];
         setData(prev => ({ ...prev, ...input }));
       },
     };
