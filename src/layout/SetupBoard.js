@@ -1,6 +1,6 @@
 "use client"
 import { FormControl, FormLabel, FormGroup, Paper, Typography } from "@mui/material"
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, useRef } from "react";
 
 import mqttClientContext from "@/context/mqttClientContext"
 import ActionButton from "@/components/ActionButton";
@@ -8,7 +8,7 @@ import ActionButton from "@/components/ActionButton";
 const defaultState = {
   hall: false,
   motor: false,
-  line: false,
+  line: 0,
   steering: false,
   parameter: false,
   mqtt: false,
@@ -33,13 +33,19 @@ function useRestartService() {
 }
 
 
-function StatusDisplay({ label, state, onState, offState }) {
+function BooleanStatusDisplay({ label, state, onState, offState }) {
   return (
     <Typography>{label}: <Typography component="span" color={state ? "success" : "error"}>{state ? onState : offState}</Typography></Typography>
   );
 }
 
-function RestartServiceButton({ disabled, name, children, ...props}) {
+function NumberStatusDisplay({ label, state }) {
+  return (
+    <Typography>{label}: {state}</Typography>
+  );
+}
+
+function RestartServiceButton({ disabled, name, children, ...props }) {
   const { restartService } = useRestartService();
 
   return (
@@ -47,35 +53,49 @@ function RestartServiceButton({ disabled, name, children, ...props}) {
   );
 }
 
-function ModuleControl({ name, label, state, setState, disabled, ...props }) {
+function ModuleControl({ name, display, ...props }) {
   return (
     <FormGroup className="flex flex-row justify-between mb-4">
-      <StatusDisplay label={label} state={state[name]} onState="Online" offState="Offline" />
-      <RestartServiceButton>Restart</RestartServiceButton>
+      {display}
+      <RestartServiceButton name={name} {...props}>Restart</RestartServiceButton>
     </FormGroup>
   );
 }
 
 export default function SetupBoard() {
+  const statusCheckerRef = useRef();
   const client = useContext(mqttClientContext);
   const [state, setState] = useState(defaultState);
 
   useEffect(() => {
     if (!client.current) return;
-
     const handler = {
       "output/state": async (message) => {
         const input = await JSON.parse(message);
         setState(prev => ({ ...prev, ...input }));
-      }
+      },
     };
 
     client.current.on("connect", () => {
       setState(prev => ({ ...prev, mqtt: true }));
       client.current.on("message", (topic, message) => {
+        setState(prev => ({ ...prev, car: true }));
+        if (statusCheckerRef.current) clearTimeout(statusCheckerRef.current);
+        statusCheckerRef.current = setTimeout(() => setState(prev => ({ ...prev, ...defaultState, mqtt: client.current.connected })), 3000);
         if (handler[topic]) handler[topic](message);
       });
-    })
+    });
+    client.current.on("disconnect", () => setState(prev => ({ ...prev, car: false })));
+
+    const getStateLoop = setInterval(async () => {
+      await client.current.publishAsync("input/control/state", "state");
+    }, 1000);
+
+
+    return () => {
+      clearInterval(getStateLoop);
+    }
+
   }, [client]);
 
   return (
@@ -85,22 +105,18 @@ export default function SetupBoard() {
           <FormControl component="fieldset" className="block">
             <FormLabel component="legend">State</FormLabel>
             <FormGroup>
-              <ModuleControl name="hall" label="Hall sensor" state={state} setState={setState} />
-              <ModuleControl name="motor" label="Motor" state={state} setState={setState} />
-              <ModuleControl name="line" label="QTR sensor" state={state} setState={setState} />
-              <ModuleControl name="steering" label="Servo" state={state} setState={setState} />
-              <ModuleControl name="parameter" label="Parameter" disabled state={state} setState={setState} />
+              <ModuleControl name="hall" display={<BooleanStatusDisplay label="Hall sensor" state={state["hall"]} onState="Online" offState="Offline" />} />
+              <ModuleControl name="motor" display={<BooleanStatusDisplay label="Motor" state={state["motor"]} onState="Online" offState="Offline" />} />
+              <ModuleControl name="line" display={<NumberStatusDisplay label="QTR sensor" state={`${(Number(state["line"]) * 100).toFixed(2)}%`}></NumberStatusDisplay>} />
+              <ModuleControl name="steering" display={<BooleanStatusDisplay label="Servo" state={state["steering"]} onState="Online" offState="Offline" />} />
+              <ModuleControl name="parameter" display={<BooleanStatusDisplay label="Parameter" state={state["parameter"]} onState="Online" offState="Offline" />} disabled />
             </FormGroup>
-            <ActionButton className="mb-4" onClickHandler={async () => {
-              if (!client.current) return;
-              await client.current.publishAsync("input/control/state", "state");
-            }}> Update state </ActionButton>
             <RestartServiceButton name="all" color="error" fullWidth={true}>Reset</RestartServiceButton>
           </FormControl>
         </Paper>
         <Paper className="py-10 px-6 mb-4">
-          <StatusDisplay label="MQTT" state={state["mqtt"]} onState="Connected" offState="Disconnected"/>
-          <StatusDisplay label="Car" state={state["car"]} onState="Connected" offState="Disconnected"/>
+          <BooleanStatusDisplay label="MQTT" state={state["mqtt"]} onState="Connected" offState="Disconnected" />
+          <BooleanStatusDisplay label="Car" state={state["car"]} onState="Connected" offState="Disconnected" />
         </Paper>
       </FormControl>
     </>

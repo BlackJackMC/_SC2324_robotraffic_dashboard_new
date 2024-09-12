@@ -17,6 +17,7 @@ const defaultData = {
   canGo: 0,
   direction: 1,
   angle: 0,
+  magnetic: 0,
 };
 
 export default function ParameterBoard() {
@@ -63,8 +64,9 @@ export default function ParameterBoard() {
               <Grid2 size={4} ><NumberTextField label="P" name="P" value={data.P} onChange={(e) => setData(prev => ({ ...prev, P: e.target.value }))} /></Grid2>
               <Grid2 size={4} ><NumberTextField label="I" name="I" value={data.I} onChange={(e) => setData(prev => ({ ...prev, I: e.target.value }))} /></Grid2>
               <Grid2 size={4} ><NumberTextField label="D" name="D" value={data.D} onChange={(e) => setData(prev => ({ ...prev, D: e.target.value }))} /></Grid2>
-              <Grid2 size={6}><NumberTextField label="setpoint" name="setpoint" value={data.setpoint} onChange={(e) => setData(prev => ({ ...prev, setpoint: e.target.value }))} /></Grid2>
-              <Grid2 size={6}><NumberTextField label="angle" name="angle" value={data.angle} onChange={(e) => setData(prev => ({ ...prev, angle: e.target.value }))} /></Grid2>
+              <Grid2 size={4}><NumberTextField label="setpoint" name="setpoint" value={data.setpoint} onChange={(e) => setData(prev => ({ ...prev, setpoint: e.target.value }))} /></Grid2>
+              <Grid2 size={4}><NumberTextField label="angle" name="angle" value={data.angle} onChange={(e) => setData(prev => ({ ...prev, angle: e.target.value }))} /></Grid2>
+              <Grid2 size={4}><NumberTextField label="magnetic" name="magnetic" value={data.magnetic} onChange={(e) => setData(prev => ({ ...prev, magnetic: e.target.value }))} /></Grid2>
               <Grid2 className="flex flex-col justify-center" size={12}>
                 <Typography gutterBottom>Current checkpoint</Typography>
                 <Slider defaultValue={0} min={0} max={2} step={1} marks={[{ value: 1, label: "west" }, { value: 2, label: "south" }]} value={data.currentCheckpoint} onChange={(e) => setData(prev => ({ ...prev, currentCheckpoint: e.target.value }))} />
