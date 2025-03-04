@@ -1,26 +1,24 @@
-'use client'
+"use client";
 import { createTheme } from "@mui/material/styles";
 import { Poppins } from "next/font/google";
 
-const poppins = Poppins({ subsets: ["latin"], weight: ['400', '500', '600', '700'] });
+const poppins = Poppins({ subsets: ["latin"], weight: ["400", "500", "600", "700"] });
 
-
-const darkTheme = createTheme({
-  palette: {
-    mode: 'dark',
-  },
-  typography: {
-    fontFamily: poppins.style.fontFamily
-  },
+export const theme = createTheme({
+	colorSchemes: {
+		dark: true,
+	},
+	components: {
+		MuiButton: {
+			variants: [
+				{
+					props: { variant: "ghost" },
+					style: ({ theme }) => ({
+						color: theme.palette.text.primary,
+					}),
+				},
+			],
+		},
+	},
+	typography: poppins.style.fontFamily,
 });
-
-const lightTheme = createTheme({
-  palette: {
-    mode: 'light',
-  },
-  typography: {
-    fontFamily: poppins.style.fontFamily
-  }
-})
-
-module.exports = { darkTheme, lightTheme };
